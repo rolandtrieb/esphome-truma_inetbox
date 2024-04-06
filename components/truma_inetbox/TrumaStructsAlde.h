@@ -112,8 +112,9 @@ struct StatusFrameAldeHeaterDay {  // NOLINT(altera-struct-pack-align)
 // ALDE direct heater message structs
 
 // ex: 5E.0B.00.FF.FF.FF.FF.FF
+// ex: 40.0B.00
 struct Heater_Alde_PID_03 {  // NOLINT(altera-struct-pack-align)
-  TargetTemp temp;           // 18°C
+  TargetTemp temp;           // 15-18°C
   u_int8_t unknown_02;       // 0x00
 } __attribute__((packed));
 
@@ -123,13 +124,15 @@ struct Heater_Alde_PID_04 {  // NOLINT(altera-struct-pack-align)
 } __attribute__((packed));
 
 // ex: 01.08.90.FF.FF.FF.FF.FF
+// ex: 00.08.90
 struct Heater_Alde_PID_05 {  // NOLINT(altera-struct-pack-align)
-  u_int8_t unknown_00;       // 0x01
+  u_int8_t unknown_00;       // 0x01 - ? On or Off
   u_int8_t unknown_01;       // 0x08
   u_int8_t unknown_02;       // 0x90
 } __attribute__((packed));
 
 // ex: 00.00.2F.F5.FF.FF.FF.FF
+// ex: 00.00.2F.F5
 struct Heater_Alde_PID_06 {  // NOLINT(altera-struct-pack-align)
   u_int8_t unknown_00;       // 0x00
   u_int8_t unknown_01;       // 0x00
@@ -140,8 +143,9 @@ struct Heater_Alde_PID_06 {  // NOLINT(altera-struct-pack-align)
 // ex: 57.0B.FF.FF.2B.00.20.44
 // ex: 55.0B.FF.FF.2B.00.20.44
 // ex: 56.0B.FF.FF.2B.00.20.44
+// ex: B8.0B.FF.FF.2B.00.20.44
 struct Heater_Alde_PID_07 {  // NOLINT(altera-struct-pack-align)
-  TargetTemp temp;           // 17.4°C
+  TargetTemp temp;           // 17.4-27-28.2°C
   u_int16_t unknown_02;      // 0xFFFF
   u_int8_t unknown_04;       // 0x2B
   u_int8_t unknown_05;       // 0x00
@@ -153,25 +157,28 @@ struct Heater_Alde_PID_07 {  // NOLINT(altera-struct-pack-align)
 // ex: DA.0C.04.FF.FF.FF.FF.FF
 // ex: D0.0C.04.FF.FF.FF.FF.FF
 // ex: E4.0C.04.FF.FF.FF.FF.FF
+// ex: E0.0B.00
 struct Heater_Alde_PID_13 {  // NOLINT(altera-struct-pack-align)
-  TargetTemp temp;           // 56 - 58°C
+  TargetTemp temp;           // 30-31-56 - 58°C
   u_int8_t unknown_02;       // 0x04
 } __attribute__((packed));
 
 // ex: 00.00.2F.F5.04.0B.FF.FF
 // ex: 00.00.2F.F5.0E.0B.FF.FF
+// ex: 00.00.2F.F5.C2.0B
 struct Heater_Alde_PID_15 {  // NOLINT(altera-struct-pack-align)
   u_int8_t unknown_00;       // 0x00
   u_int8_t unknown_01;       // 0x00
   u_int16_t unknown_02;      // 0xF52F
-  TargetTemp temp;           // 9-10°C
+  TargetTemp temp;           // 9-10-28°C
 } __attribute__((packed));
 
 // ex: D0.0C.FF.7F.FF.7F.6D.00
 // ex: DA.0C.FF.7F.FF.7F.6D.00
 // ex: DA.0C.FF.7F.FF.7F.45.00
+// ex: D6.0B.FF.7F.FF.7F.00.00
 struct Heater_Alde_PID_1B {  // NOLINT(altera-struct-pack-align)
-  TargetTemp temp;           // 55-57°C
+  TargetTemp temp;           // 30-55-57°C
   u_int16_t unknown_02;      // 0x7FFF
   u_int16_t unknown_04;      // 0x7FFF
   u_int8_t unknown_06;       // 0x6D x45

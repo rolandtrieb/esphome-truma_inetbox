@@ -139,8 +139,18 @@ bool TrumaiNetBoxApp::answer_lin_order_(const u_int8_t pid) {
   if (pid == LIN_PID_TRUMA_INET_BOX) {
     std::array<u_int8_t, 8> response = this->lin_empty_response_;
 
-    if (this->updates_to_send_.empty() && !this->has_update_to_submit_()) {
-      response[0] = 0xFE;
+    if (!this->is_alde_device_) {
+      if (this->updates_to_send_.empty() && !this->has_update_to_submit_()) {
+        // FE -> No updates found.
+        // FF -> Got updates. Please request a read.
+        response[0] = 0xFE;
+      }
+    } else {
+      if (!this->has_update_to_submit_()) {
+        // FE -> No updates found.
+        // FF -> Got updates. Please request a read.
+        response[0] = 0xFE;
+      }
     }
     this->write_lin_answer_(response.data(), (u_int8_t) sizeof(response));
     return true;
@@ -160,6 +170,8 @@ void TrumaiNetBoxApp::lin_message_slave_observed_non_queue_(const u_int8_t pid, 
   } else
     // ALDE support
     if (pid == 0x03 && length >= sizeof(Heater_Alde_PID_03)) {
+      // I could set this field in all cases. One is enough.
+      this->is_alde_device_ = true;
       std::memcpy(&this->heater_alde_pid_03_, message, sizeof(Heater_Alde_PID_03));
     } else if (pid == 0x04 && length >= sizeof(Heater_Alde_PID_04)) {
       std::memcpy(&this->heater_alde_pid_04_, message, sizeof(Heater_Alde_PID_04));
@@ -245,6 +257,7 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
     // The order must match with the method 'has_update_to_submit_'.
     if (this->init_recieved_ == 0) {
       this->message_counter = 0;
+      this->clear_updates_to_send_queue_();
       // message[4] is length.
       if (message[4] == 0x1A) {
         // ALDE init
@@ -306,8 +319,9 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
       this->update_time_ = 0;
       return response;
     } else {
-      ESP_LOGW(TAG, "Requested read: CP Plus asks for an update, but I have none.");
+      ESP_LOGW(TAG, "Requested read: Master asks for an update, but I have none.");
     }
+    return nullptr;
   } else if (message[0] != LIN_SID_FIll_STATE_BUFFFER) {
     ESP_LOGE(TAG, "Unknown SID %02X .", message[0]);
     return nullptr;
@@ -456,6 +470,7 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
     // ALDE Device
     // BB.00.1F.00.14.00.00.22.FF.FF.FF.54.01.0E.0C.00.58.02.00.01.FF.DE.41.01.00.00.04.10.00.00.00-Alde-Paneel 3020 113
     // BB.00.1F.00.14.00.00.22.FF.FF.FF.54.01.0E.0C.00.C9.02.01.01.FF.DE.41.30.03.00.02.6D.00.00.00-Alde Compact 3020 HE
+    // BB.00.1F.00.14.00.00.22.FF.FF.FF.54.01.0E.0C.00.3A.02.01.00.FF.DE.41.30.03.00.FF.FF.FF.FF.FF
     auto device = statusFrame->device;
     if (header->message_type == STATUS_FRAME_DEVICES_ALDE) {
       ESP_LOGI(TAG, "StatusFrameAldeDevice");

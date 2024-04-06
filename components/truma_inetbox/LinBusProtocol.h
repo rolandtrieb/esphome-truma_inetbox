@@ -21,6 +21,10 @@ class LinBusProtocol : public LinBusListener {
   virtual u_int8_t lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) = 0;
   virtual const u_int8_t *lin_multiframe_recieved(const u_int8_t *message, const u_int8_t message_len,
                                                   u_int8_t *return_len) = 0;
+  void clear_updates_to_send_queue_() {
+    std::queue<std::array<u_int8_t, 8>> empty;
+    std::swap(this->updates_to_send_, empty);
+  }
 
   std::queue<std::array<u_int8_t, 8>> updates_to_send_ = {};
   std::array<u_int8_t, 8> updates_to_send_high_prio_ = {};
