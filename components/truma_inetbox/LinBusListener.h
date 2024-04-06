@@ -65,6 +65,7 @@ class LinBusListener : public PollingComponent, public uart::UARTDevice {
   bool check_for_lin_fault_();
   virtual bool answer_lin_order_(const u_int8_t pid) = 0;
   virtual void lin_message_recieved_(const u_int8_t pid, const u_int8_t *message, u_int8_t length) = 0;
+  virtual void lin_message_slave_observed_non_queue_(const u_int8_t pid, const u_int8_t *message, u_int8_t length) = 0;
 
  private:
   // Microseconds per UART Baud

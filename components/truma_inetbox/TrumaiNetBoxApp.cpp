@@ -16,6 +16,7 @@ TrumaiNetBoxApp::TrumaiNetBoxApp() {
   // this->config_.set_parent(this);
   this->heater_.set_parent(this);
   this->timer_.set_parent(this);
+  this->alde_status_.set_parent(this);
 }
 
 void TrumaiNetBoxApp::update() {
@@ -29,6 +30,7 @@ void TrumaiNetBoxApp::update() {
   this->config_.update();
   this->heater_.update();
   this->timer_.update();
+  this->alde_status_.update();
 
   LinBusProtocol::update();
 
@@ -44,6 +46,43 @@ void TrumaiNetBoxApp::update() {
     }
   }
 #endif  // USE_TIME
+
+  if (this->log_update_debug_counter_++ > 8) {
+    this->log_update_debug_counter_ = 0;
+    if (!this->is_alde_device_) {
+      ESP_LOGD(TAG, "x20: %s",
+               format_hex_pretty((uint8_t *) &this->heater_combi_pid_20_, sizeof(Heater_Combi_PID_20)).c_str());
+      ESP_LOGD(TAG, "x21: %s",
+               format_hex_pretty((uint8_t *) &this->heater_combi_pid_21_, sizeof(Heater_Combi_PID_21)).c_str());
+      ESP_LOGD(TAG, "x22: %s",
+               format_hex_pretty((uint8_t *) &this->heater_combi_pid_22_, sizeof(Heater_Combi_PID_22)).c_str());
+    } else {
+      ESP_LOGD(TAG, "x03: %s - %.1f°C",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_03_, sizeof(Heater_Alde_PID_03)).c_str(),
+               temp_code_to_decimal(this->heater_alde_pid_03_.temp));
+      ESP_LOGD(TAG, "x04: %s - %.1f°C",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_04_, sizeof(Heater_Alde_PID_04)).c_str(),
+               temp_code_to_decimal(this->heater_alde_pid_04_.temp));
+      ESP_LOGD(TAG, "x05: %s",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_05_, sizeof(Heater_Alde_PID_05)).c_str());
+      ESP_LOGD(TAG, "x06: %s - %u / %i",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_06_, sizeof(Heater_Alde_PID_06)).c_str(),
+               this->heater_alde_pid_06_.unknown_02, this->heater_alde_pid_06_.unknown_02);
+      ESP_LOGD(TAG, "x07: %s - %.1f°C",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_07_, sizeof(Heater_Alde_PID_07)).c_str(),
+               temp_code_to_decimal(this->heater_alde_pid_07_.temp));
+      ESP_LOGD(TAG, "x13: %s - %.1f°C",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_13_, sizeof(Heater_Alde_PID_13)).c_str(),
+               temp_code_to_decimal(this->heater_alde_pid_13_.temp));
+      ESP_LOGD(TAG, "x15: %s - %u / %i %.1f°C",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_15_, sizeof(Heater_Alde_PID_15)).c_str(),
+               this->heater_alde_pid_15_.unknown_02, this->heater_alde_pid_15_.unknown_02,
+               temp_code_to_decimal(this->heater_alde_pid_15_.temp));
+      ESP_LOGD(TAG, "x1B: %s - %.1f°C",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_1B_, sizeof(Heater_Alde_PID_1B)).c_str(),
+               temp_code_to_decimal(this->heater_alde_pid_1B_.temp));
+    }
+  }
 }
 
 const std::array<uint8_t, 4> TrumaiNetBoxApp::lin_identifier() {
@@ -80,7 +119,7 @@ void TrumaiNetBoxApp::lin_reset_device() {
   this->device_registered_ = micros();
   this->init_recieved_ = 0;
   this->init_state_ = 0;
-  this->alde_device_ = false;
+  this->is_alde_device_ = false;
 
   this->airconAuto_.reset();
   this->airconManual_.reset();
@@ -88,11 +127,14 @@ void TrumaiNetBoxApp::lin_reset_device() {
   this->config_.reset();
   this->heater_.reset();
   this->timer_.reset();
+  this->alde_status_.reset();
 
   this->update_time_ = 0;
 }
 
 bool TrumaiNetBoxApp::answer_lin_order_(const u_int8_t pid) {
+  // Timinig critical function. No direct log in here.
+
   // Alive message
   if (pid == LIN_PID_TRUMA_INET_BOX) {
     std::array<u_int8_t, 8> response = this->lin_empty_response_;
@@ -106,35 +148,63 @@ bool TrumaiNetBoxApp::answer_lin_order_(const u_int8_t pid) {
   return LinBusProtocol::answer_lin_order_(pid);
 }
 
-bool TrumaiNetBoxApp::lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) {
+void TrumaiNetBoxApp::lin_message_slave_observed_non_queue_(const u_int8_t pid, const u_int8_t *message,
+                                                            u_int8_t length) {
+  // TRUMA Combi
+  if (pid == 0x20 && length >= sizeof(Heater_Combi_PID_20)) {
+    std::memcpy(&this->heater_combi_pid_20_, message, sizeof(Heater_Combi_PID_20));
+  } else if (pid == 0x21 && length >= sizeof(Heater_Combi_PID_21)) {
+    std::memcpy(&this->heater_combi_pid_21_, message, sizeof(Heater_Combi_PID_21));
+  } else if (pid == 0x22 && length >= sizeof(Heater_Combi_PID_22)) {
+    std::memcpy(&this->heater_combi_pid_22_, message, sizeof(Heater_Combi_PID_22));
+  } else
+    // ALDE support
+    if (pid == 0x03 && length >= sizeof(Heater_Alde_PID_03)) {
+      std::memcpy(&this->heater_alde_pid_03_, message, sizeof(Heater_Alde_PID_03));
+    } else if (pid == 0x04 && length >= sizeof(Heater_Alde_PID_04)) {
+      std::memcpy(&this->heater_alde_pid_04_, message, sizeof(Heater_Alde_PID_04));
+    } else if (pid == 0x05 && length >= sizeof(Heater_Alde_PID_05)) {
+      std::memcpy(&this->heater_alde_pid_05_, message, sizeof(Heater_Alde_PID_05));
+    } else if (pid == 0x06 && length >= sizeof(Heater_Alde_PID_06)) {
+      std::memcpy(&this->heater_alde_pid_06_, message, sizeof(Heater_Alde_PID_06));
+    } else if (pid == 0x07 && length >= sizeof(Heater_Alde_PID_07)) {
+      std::memcpy(&this->heater_alde_pid_07_, message, sizeof(Heater_Alde_PID_07));
+    } else if (pid == 0x13 && length >= sizeof(Heater_Alde_PID_13)) {
+      std::memcpy(&this->heater_alde_pid_13_, message, sizeof(Heater_Alde_PID_13));
+    } else if (pid == 0x15 && length >= sizeof(Heater_Alde_PID_15)) {
+      std::memcpy(&this->heater_alde_pid_15_, message, sizeof(Heater_Alde_PID_15));
+    } else if (pid == 0x1B && length >= sizeof(Heater_Alde_PID_1B)) {
+      std::memcpy(&this->heater_alde_pid_1B_, message, sizeof(Heater_Alde_PID_1B));
+    }
+}
+
+u_int8_t TrumaiNetBoxApp::lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) {
   if (identifier == 0x00 /* LIN Product Identification */) {
     auto lin_identifier = this->lin_identifier();
     (*response)[0] = lin_identifier[0];
     (*response)[1] = lin_identifier[1];
     (*response)[2] = lin_identifier[2];
     (*response)[3] = lin_identifier[3];
-    (*response)[4] = 0x01;  // Variant
-    return true;
+    (*response)[4] = 0x00;  // Variant
+    return 5;
   } else if (identifier == 0x20 /* Product details to display in CP plus */) {
     auto lin_identifier_version = this->lin_identifier_version();
     // Only the first three parts are displayed.
     (*response)[0] = lin_identifier_version[0];
     (*response)[1] = lin_identifier_version[1];
     (*response)[2] = lin_identifier_version[2];
-    (*response)[3] = 0xFF;  // Empty. Package length by INet Box is 2 shorter.
-    (*response)[4] = 0xFF;  // Empty. Package length by INet Box is 2 shorter.
-    return true;
+    return 3;
   } else if (identifier == 0x22 /* unknown usage */) {
     // Init is failing if missing
     // Data can be anything?
-    return true;
+    return 5;
   }
-  return false;
+  return 0;
 }
 
 const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message, const u_int8_t message_len,
                                                          u_int8_t *return_len) {
-  static u_int8_t response[48] = {};
+  static u_int8_t response[sizeof(StatusFrame)] = {};
   // Validate message prefix.
   if (message_len < truma_message_header.size()) {
     ESP_LOGE(TAG, "Message header too short.");
@@ -174,6 +244,7 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
 
     // The order must match with the method 'has_update_to_submit_'.
     if (this->init_recieved_ == 0) {
+      this->message_counter = 0;
       // message[4] is length.
       if (message[4] == 0x1A) {
         // ALDE init
@@ -185,9 +256,9 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
         // this->init_state_debug_ = 1;
         // Preinit send x25 long empty (xFF) package
         // Or is this response when I am asked for an update without signaling that I have one?
-        ESP_LOGD(TAG, "Requested read: Flush empty response");
-        this->message_counter = 0x00;
-        status_frame_create_null(response_frame, return_len);
+
+        ESP_LOGD(TAG, "Requested read: Sending init");
+        status_frame_create_init(response_frame, return_len, this->message_counter++);
         return response;
         // } else {
         //   // DEBUG: try all possible status frame message_type as init.
@@ -229,6 +300,11 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
       this->update_time_ = 0;
       return response;
 #endif  // USE_TIME
+    } else if (this->alde_status_.has_update()) {
+      ESP_LOGD(TAG, "Requested read: Sending alde status update");
+      this->alde_status_.create_update_data(response_frame, return_len, this->message_counter++);
+      this->update_time_ = 0;
+      return response;
     } else {
       ESP_LOGW(TAG, "Requested read: CP Plus asks for an update, but I have none.");
     }
@@ -361,15 +437,9 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
     }
 
     return response;
-  } else if ((header->message_type == STATUS_FRAME_DEVICES || header->message_type == STATUS_FRAME_DEVICES_ALDE) &&
-             header->message_length == sizeof(StatusFrameDevice)) {
-    if (header->message_type == STATUS_FRAME_DEVICES_ALDE) {
-      ESP_LOGI(TAG, "StatusFrameDeviceAlde");
-      this->alde_device_ = true;
-    } else {
-      ESP_LOGI(TAG, "StatusFrameDevice");
-      this->alde_device_ = false;
-    }
+  } else if ((header->message_type == STATUS_FRAME_DEVICES && header->message_length == sizeof(StatusFrameDevice)) ||
+             (header->message_type == STATUS_FRAME_DEVICES_ALDE &&
+              header->message_length == sizeof(StatusFrameAldeDevice))) {
     // This message is special. I recieve one response per registered (at CP plus) device.
     // Example:
     // SID<---------PREAMBLE---------->|<---MSG_HEAD---->|count|st|??|Hardware|Software|??|??
@@ -384,13 +454,24 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
     // BB.00.1F.00.1E.00.00.22.FF.FF.FF.54.01.0C.0B.00.71.03.01.01.00.10.03.02.06.00.02.00.00
     // BB.00.1F.00.1E.00.00.22.FF.FF.FF.54.01.0C.0B.00.7C.03.02.01.00.01.0C.00.01.02.01.00.00
     // ALDE Device
-    // BB.00.1F.00.14.00.00.22.FF.FF.FF.54.01.0E.0C.00.58.02.00.01.FF.DE.41.01.00.00.04.10.00 - Alde-Paneel 3020 113
-    // BB.00.1F.00.14.00.00.22.FF.FF.FF.54.01.0E.0C.00.C9.02.01.01.FF.DE.41.30.03.00.02.6D.00 - Alde Compact 3020 HE
+    // BB.00.1F.00.14.00.00.22.FF.FF.FF.54.01.0E.0C.00.58.02.00.01.FF.DE.41.01.00.00.04.10.00.00.00-Alde-Paneel 3020 113
+    // BB.00.1F.00.14.00.00.22.FF.FF.FF.54.01.0E.0C.00.C9.02.01.01.FF.DE.41.30.03.00.02.6D.00.00.00-Alde Compact 3020 HE
     auto device = statusFrame->device;
-
-    ESP_LOGD(TAG, "StatusFrameDevice %d/%d - %d.%02d.%02d %04X.%02X (%02X %02X)", device.device_id + 1,
-             device.device_count, device.software_revision[0], device.software_revision[1], device.software_revision[2],
-             device.hardware_revision_major, device.hardware_revision_minor, device.unknown_2, device.unknown_3);
+    if (header->message_type == STATUS_FRAME_DEVICES_ALDE) {
+      ESP_LOGI(TAG, "StatusFrameAldeDevice");
+      ESP_LOGD(TAG, "StatusFrameAldeDevice %d/%d - %d.%02d.%02d %04X.%02X (%02X %02X)", device.device_id + 1,
+               device.device_count, device.software_revision[0], device.software_revision[1],
+               device.software_revision[2], device.hardware_revision_major, device.hardware_revision_minor,
+               device.unknown_2, device.unknown_3);
+      this->is_alde_device_ = true;
+    } else {
+      ESP_LOGI(TAG, "StatusFrameDevice");
+      ESP_LOGD(TAG, "StatusFrameDevice %d/%d - %d.%02d.%02d %04X.%02X (%02X %02X)", device.device_id + 1,
+               device.device_count, device.software_revision[0], device.software_revision[1],
+               device.software_revision[2], device.hardware_revision_major, device.hardware_revision_minor,
+               device.unknown_2, device.unknown_3);
+      this->is_alde_device_ = false;
+    }
 
     const auto truma_device = static_cast<TRUMA_DEVICE>(device.software_revision[0]);
     {
@@ -461,8 +542,10 @@ const u_int8_t *TrumaiNetBoxApp::lin_multiframe_recieved(const u_int8_t *message
              temp_code_to_decimal(statusFrame->aldeStatus.current_temp_outside),
              ((u_int8_t) statusFrame->aldeStatus.el_mode) * 100,
              statusFrame->aldeStatus.gas_mode == GasModeAlde::GAS_MODE_ALDE_OFF ? "OFF" : "ON");
+    this->alde_status_.set_status(statusFrame->aldeStatus);
     return response;
-  } else if (header->message_type == STATUS_FRAME_ALDE_ADDON && header->message_length == sizeof(StatusFrameAldeAddon)) {
+  } else if (header->message_type == STATUS_FRAME_ALDE_ADDON &&
+             header->message_length == sizeof(StatusFrameAldeAddon)) {
     ESP_LOGI(TAG, "StatusFrameAldeAddon");
     // Example:
     // SID<---------PREAMBLE---------->|<---MSG_HEAD---->|
@@ -503,8 +586,8 @@ bool TrumaiNetBoxApp::has_update_to_submit_() {
   // It is called by interrupt. Logging is a blocking operation (especially when Wifi Logging).
   // If logging is necessary use logging queue of LinBusListener class.
   if (this->init_requested_ == 0) {
-    // Init request is send 20 seconds after boot.
-    if (micros() < 1000 * 1000 * 20 /* seconds */) {
+    // Init request is send 5 seconds after boot.
+    if (micros() < 1000 * 1000 * 5 /* seconds */) {
       return false;
     }
     this->init_requested_ = micros();

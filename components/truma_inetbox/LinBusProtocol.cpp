@@ -130,8 +130,9 @@ void LinBusProtocol::lin_msg_diag_single_(const u_int8_t *message, u_int8_t leng
       response[0] = this->lin_node_address_;
 
       std::array<u_int8_t, 5> identifier_response = {};
-      if (this->lin_read_field_by_identifier_(identifier, &identifier_response)) {
-        response[1] = 6; /* bytes length - ignored by CP Plus?*/
+      auto lin_read_field_by_identifier = this->lin_read_field_by_identifier_(identifier, &identifier_response);
+      if (lin_read_field_by_identifier > 0) {
+        response[1] = lin_read_field_by_identifier + 1; /* bytes length - ignored by CP Plus?*/
         response[2] = LIN_SID_READ_BY_IDENTIFIER_RESPONSE;
         auto iterator = response.begin();
         std::advance(iterator, 3);

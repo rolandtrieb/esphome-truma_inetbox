@@ -63,8 +63,8 @@ struct StatusFrameHeader {  // NOLINT(altera-struct-pack-align)
   // sid
   u_int8_t service_identifier;
   u_int8_t header[10];
-  u_int8_t header_2;
-  u_int8_t header_3;
+  u_int8_t header_2;  // x54 - 'T'
+  u_int8_t header_3;  // x01
   // after checksum
   u_int8_t message_length;
   u_int8_t message_type;
@@ -331,7 +331,6 @@ struct StatusFrameAirconAutoInit {  // NOLINT(altera-struct-pack-align)
   u_int8_t unknown_20;  // 0x00
 } __attribute__((packed));
 
-
 union StatusFrame {  // NOLINT(altera-struct-pack-align)
   u_int8_t raw[54];
   struct {  // NOLINT(altera-struct-pack-align)
@@ -351,13 +350,31 @@ union StatusFrame {  // NOLINT(altera-struct-pack-align)
       StatusFrameAirconAuto airconAuto;
       StatusFrameAirconAutoResponse airconAutoResponse;
       StatusFrameAirconAutoInit airconAutoInit;
-      StatusFrameAldeStatusResponse aldeStatusResponse; 
+      StatusFrameAldeDevice aldeDevice;
+      StatusFrameAldeStatusResponse aldeStatusResponse;
       StatusFrameAldeStatus aldeStatus;
       StatusFrameAldeAddon aldeAddon;
       StatusFrameAldeHeaterNight aldeHeaterNight;
       StatusFrameAldeHeaterDay aldeHeaterDay;
     } __attribute__((packed));
   };
+} __attribute__((packed));
+
+// Ex AA.AA.AA.FA.00.01.E0.0F
+struct Heater_Combi_PID_20 {  // NOLINT(altera-struct-pack-align)
+  u_int8_t unknown[8];
+} __attribute__((packed));
+
+// Ex
+// 5F.1B.B4.28.00.01.F0.0F
+// 60.3B.B4.28.00.01.F0.0F
+struct Heater_Combi_PID_21 {  // NOLINT(altera-struct-pack-align)
+  u_int8_t unknown[8];
+} __attribute__((packed));
+
+// Ex 84.00.10.04.FF.FF.FF.FF
+struct Heater_Combi_PID_22 {  // NOLINT(altera-struct-pack-align)
+  u_int8_t unknown[4];
 } __attribute__((packed));
 
 }  // namespace truma_inetbox

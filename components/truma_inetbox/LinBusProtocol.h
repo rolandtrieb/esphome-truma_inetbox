@@ -18,7 +18,7 @@ class LinBusProtocol : public LinBusListener {
   bool answer_lin_order_(const u_int8_t pid) override;
   void lin_message_recieved_(const u_int8_t pid, const u_int8_t *message, u_int8_t length) override;
 
-  virtual bool lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) = 0;
+  virtual u_int8_t lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) = 0;
   virtual const u_int8_t *lin_multiframe_recieved(const u_int8_t *message, const u_int8_t message_len,
                                                   u_int8_t *return_len) = 0;
 

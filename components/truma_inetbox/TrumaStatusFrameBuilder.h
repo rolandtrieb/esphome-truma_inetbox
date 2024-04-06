@@ -14,7 +14,7 @@ inline void status_frame_create_empty(StatusFrame *response, u_int8_t message_ty
     response->raw[i] = truma_message_header[i];
   }
   // ALDE has in 5th byte the total msg length including header.
-  response->raw[4] = message_length + 6; //std::max(message_length + 6, 0x1A);
+  response->raw[4] = message_length + 6;  // std::max(message_length + 6, 0x1A);
 
   response->genericHeader.header_2 = 'T';
   response->genericHeader.header_3 = 0x01;
@@ -29,12 +29,16 @@ inline void status_frame_calculate_checksum(StatusFrame *response) {
 }
 
 inline void status_frame_create_init(StatusFrame *response, u_int8_t *response_len, u_int8_t command_counter) {
-  status_frame_create_empty(response, STATUS_FRAME_RESPONSE_INIT_REQUEST, 0, command_counter);
+  memset(response->raw, 0x00, sizeof(response->raw));
 
+  status_frame_create_empty(response, STATUS_FRAME_RESPONSE_INIT_REQUEST, 2, command_counter);
+
+  // Set length of package.
+  response->raw[4] = 0x1A;
   // Init frame is empty.
 
   status_frame_calculate_checksum(response);
-  (*response_len) = sizeof(StatusFrameHeader) + 0;
+  (*response_len) = sizeof(StatusFrameHeader) + 20;
 }
 
 inline void status_frame_create_null(StatusFrame *response, u_int8_t *response_len) {

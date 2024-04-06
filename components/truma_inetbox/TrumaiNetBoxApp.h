@@ -31,7 +31,7 @@ class TrumaiNetBoxApp : public LinBusProtocol {
 
   TRUMA_DEVICE get_heater_device() const { return this->heater_device_; }
   TRUMA_DEVICE get_aircon_device() const { return this->aircon_device_; }
-  bool get_is_alde_device() const { return this->alde_device_; }
+  bool get_is_alde_device() const { return this->is_alde_device_; }
 
   TrumaiNetBoxAppAirconAuto *get_aircon_auto() { return &this->airconAuto_; }
   TrumaiNetBoxAppAirconManual *get_aircon_manual() { return &this->airconManual_; }
@@ -77,6 +77,19 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   TrumaiNetBoxAppTimer timer_;
   TrumaiNetBoxAppAldeStatus alde_status_;
 
+  u_int8_t log_update_debug_counter_ = 0;
+  Heater_Combi_PID_20 heater_combi_pid_20_ = {};
+  Heater_Combi_PID_21 heater_combi_pid_21_ = {};
+  Heater_Combi_PID_22 heater_combi_pid_22_ = {};
+  Heater_Alde_PID_03 heater_alde_pid_03_ = {};
+  Heater_Alde_PID_04 heater_alde_pid_04_ = {};
+  Heater_Alde_PID_05 heater_alde_pid_05_ = {};
+  Heater_Alde_PID_06 heater_alde_pid_06_ = {};
+  Heater_Alde_PID_07 heater_alde_pid_07_ = {};
+  Heater_Alde_PID_13 heater_alde_pid_13_ = {};
+  Heater_Alde_PID_15 heater_alde_pid_15_ = {};
+  Heater_Alde_PID_1B heater_alde_pid_1B_ = {};
+
   // last time CP plus was informed I got an update msg.
   uint32_t update_time_ = 0;
 
@@ -86,11 +99,12 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   // Mark if the initial clock sync was done.
   bool update_status_clock_done = false;
 #endif  // USE_TIME
-  bool alde_device_ = false;
+  bool is_alde_device_ = false;
 
   bool answer_lin_order_(const u_int8_t pid) override;
+  void lin_message_slave_observed_non_queue_(const u_int8_t pid, const u_int8_t *message, u_int8_t length) override;
 
-  bool lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) override;
+  u_int8_t lin_read_field_by_identifier_(u_int8_t identifier, std::array<u_int8_t, 5> *response) override;
   const u_int8_t *lin_multiframe_recieved(const u_int8_t *message, const u_int8_t message_len,
                                           u_int8_t *return_len) override;
 
