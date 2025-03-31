@@ -11,33 +11,33 @@ void TrumaSensor::setup() {
   this->parent_->get_alde_satus()->add_on_message_callback([this](const StatusFrameAldeStatus *status_alde) {
     switch (this->type_) {
       case TRUMA_SENSOR_TYPE::CURRENT_ROOM_TEMPERATURE:
-        this->publish_state(temp_code_to_decimal(status_alde->current_temp_room));
+        this->publish_state(temp_code_to_decimal(status_alde->current_temp_inside));
         break;
-      case TRUMA_SENSOR_TYPE::CURRENT_WATER_TEMPERATURE:
-        this->publish_state(temp_code_to_decimal(status_alde->current_temp_water));
-        break;
+      //case TRUMA_SENSOR_TYPE::CURRENT_WATER_TEMPERATURE:
+      //  this->publish_state(temp_code_to_decimal(status_alde->current_temp_water));
+      //  break;
       case TRUMA_SENSOR_TYPE::TARGET_ROOM_TEMPERATURE:
         this->publish_state(temp_code_to_decimal(status_alde->target_temp_room));
         break;
       case TRUMA_SENSOR_TYPE::TARGET_WATER_TEMPERATURE:
-        this->publish_state(temp_code_to_decimal(status_alde->target_temp_water));
+        this->publish_state(temp_code_to_decimal(status_alde->water_mode));
         break;
-      case TRUMA_SENSOR_TYPE::HEATING_MODE:
-        this->publish_state(static_cast<float>(status_alde->heating_mode));
-        break;
+      //case TRUMA_SENSOR_TYPE::HEATING_MODE:
+      //  this->publish_state(static_cast<float>(status_alde->heater_mode));
+      //  break;
       case TRUMA_SENSOR_TYPE::ELECTRIC_POWER_LEVEL:
-        this->publish_state(static_cast<float>(status_alde->el_power_level_a));
+        this->publish_state(static_cast<float>(status_alde->el_mode));
         break;
       case TRUMA_SENSOR_TYPE::ENERGY_MIX:
-        this->publish_state(static_cast<float>(status_alde->energy_mix_a));
+        this->publish_state(static_cast<float>(status_alde->gas_mode));
         break;
       case TRUMA_SENSOR_TYPE::OPERATING_STATUS:
-        this->publish_state(static_cast<float>(status_alde->operating_status));
+        this->publish_state(static_cast<float>(status_alde->heater_prio));
         break;
-      case TRUMA_SENSOR_TYPE::HEATER_ERROR_CODE: {
-        float errorcode = status_alde->error_code_high * 100.0f + status_alde->error_code_low;
-        this->publish_state(errorcode);
-        break;
+     // case TRUMA_SENSOR_TYPE::HEATER_ERROR_CODE: {
+     //   float errorcode = status_alde->error_code_high * 100.0f + status_alde->error_code_low;
+     //   this->publish_state(errorcode);
+     //   break;
       }
       default:
         break;
