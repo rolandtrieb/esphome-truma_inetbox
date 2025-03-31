@@ -53,7 +53,7 @@ void TrumaRoomClimate::control(const climate::ClimateCall &call) {
     if (!this->parent_->get_is_alde_device()) {
       this->parent_->get_heater()->action_heater_room(static_cast<u_int8_t>(temp));
     } else {
-      this->parent_->get_alde_satus()->action_heater_room(static_cast<u_int8_t>(temp));
+      this->parent_->get_alde_status()->action_heater_room(static_cast<u_int8_t>(temp));
     }
   }
 
