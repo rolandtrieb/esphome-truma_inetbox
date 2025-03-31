@@ -38,7 +38,7 @@ void TrumaSensor::setup() {
      //   float errorcode = status_alde->error_code_high * 100.0f + status_alde->error_code_low;
      //   this->publish_state(errorcode);
      //   break;
-      }
+     // }
       default:
         break;
     }
