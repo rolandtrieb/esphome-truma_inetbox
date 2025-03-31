@@ -8,7 +8,7 @@ namespace truma_inetbox {
 static const char *const TAG = "truma_inetbox.sensor";
 
 void TrumaSensor::setup() {
-  this->parent_->get_heater()->add_on_message_callback([this](const StatusFrameHeater *status_heater) {
+  this->parent_->get_alde_satus()->add_on_message_callback([this](const StatusFrameAldeStatus *status_alde) {
     switch (this->type_) {
       case TRUMA_SENSOR_TYPE::CURRENT_ROOM_TEMPERATURE:
         this->publish_state(temp_code_to_decimal(status_alde->current_temp_room));
@@ -26,16 +26,16 @@ void TrumaSensor::setup() {
         this->publish_state(static_cast<float>(status_alde->heating_mode));
         break;
       case TRUMA_SENSOR_TYPE::ELECTRIC_POWER_LEVEL:
-        this->publish_state(static_cast<float>(status_heater->el_power_level_a));
+        this->publish_state(static_cast<float>(status_alde->el_power_level_a));
         break;
       case TRUMA_SENSOR_TYPE::ENERGY_MIX:
-        this->publish_state(static_cast<float>(status_heater->energy_mix_a));
+        this->publish_state(static_cast<float>(status_alde->energy_mix_a));
         break;
       case TRUMA_SENSOR_TYPE::OPERATING_STATUS:
-        this->publish_state(static_cast<float>(status_heater->operating_status));
+        this->publish_state(static_cast<float>(status_alde->operating_status));
         break;
       case TRUMA_SENSOR_TYPE::HEATER_ERROR_CODE: {
-        float errorcode = status_heater->error_code_high * 100.0f + status_heater->error_code_low;
+        float errorcode = status_alde->error_code_high * 100.0f + status_alde->error_code_low;
         this->publish_state(errorcode);
         break;
       }
