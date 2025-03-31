@@ -25,7 +25,7 @@ void TrumaSensor::setup() {
       //case TRUMA_SENSOR_TYPE::HEATING_MODE:
       //  this->publish_state(static_cast<float>(status_alde->heater_mode));
       //  break;
-      case TRUMA_SENSOR_TYPE::ElectricPowerLevelAlde:
+      case TRUMA_SENSOR_TYPE::ELECTRIC_POWER_LEVEL:
         this->publish_state(static_cast<float>(status_alde->el_mode));
         break;
       case TRUMA_SENSOR_TYPE::ENERGY_MIX:
