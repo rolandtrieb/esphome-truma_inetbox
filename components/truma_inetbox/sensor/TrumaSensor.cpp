@@ -20,7 +20,7 @@ void TrumaSensor::setup() {
         this->publish_state(temp_code_to_decimal(status_alde->target_temp_room));
         break;
       case TRUMA_SENSOR_TYPE::TARGET_WATER_TEMPERATURE:
-        this->publish_state(temp_code_to_decimal(status_alde->water_mode));
+        this->publish_state(static_cast<float>(status_alde->water_mode));
         break;
       //case TRUMA_SENSOR_TYPE::HEATING_MODE:
       //  this->publish_state(static_cast<float>(status_alde->heater_mode));
