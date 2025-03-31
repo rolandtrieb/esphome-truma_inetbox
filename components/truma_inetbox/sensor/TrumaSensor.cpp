@@ -8,7 +8,7 @@ namespace truma_inetbox {
 static const char *const TAG = "truma_inetbox.sensor";
 
 void TrumaSensor::setup() {
-  this->parent_->get_alde_satus()->add_on_message_callback([this](const StatusFrameAldeStatus *status_alde) {
+  this->parent_->get_alde_status()->add_on_message_callback([this](const StatusFrameAldeStatus *status_alde) {
     switch (this->type_) {
       case TRUMA_SENSOR_TYPE::CURRENT_ROOM_TEMPERATURE:
         this->publish_state(temp_code_to_decimal(status_alde->current_temp_inside));
