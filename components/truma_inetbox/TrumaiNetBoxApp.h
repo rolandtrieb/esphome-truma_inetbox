@@ -39,7 +39,7 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   TrumaiNetBoxAppConfig *get_config() { return &this->config_; }
   TrumaiNetBoxAppHeater *get_heater() { return &this->heater_; }
   TrumaiNetBoxAppTimer *get_timer() { return &this->timer_; }
-  TrumaiNetBoxAppAldeStatus *get_alde_satus() { return &this->alde_status_; }
+  TrumaiNetBoxAppAldeStatus *get_alde_status() { return &this->alde_status_; }
 
   int64_t get_last_cp_plus_request() { return this->device_registered_; }
 
