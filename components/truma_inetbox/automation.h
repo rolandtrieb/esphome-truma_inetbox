@@ -12,8 +12,8 @@ template<typename... Ts> class HeaterRoomTempAction : public Action<Ts...>, publ
   TEMPLATABLE_VALUE(HeatingMode, heating_mode)
 
   void play(Ts... x) override {
-    this->parent_->get_alde_status()->action_heater_room(this->temperature_.value_or(x..., 0),
-                                                    this->heating_mode_.value_or(x..., HeatingMode::HEATING_MODE_OFF));
+    this->parent_->get_alde_status()->action_heater_room(this->temperature_.value_or(x..., 0);
+                                                    #this->heating_mode_.value_or(x..., HeatingMode::HEATING_MODE_OFF));
   }
 };
 
