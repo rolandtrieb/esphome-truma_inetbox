@@ -12,7 +12,7 @@ template<typename... Ts> class HeaterRoomTempAction : public Action<Ts...>, publ
   TEMPLATABLE_VALUE(HeatingMode, heating_mode)
 
   void play(Ts... x) override {
-    this->parent_->get_heater()->action_heater_room(this->temperature_.value_or(x..., 0),
+    this->parent_->get_alde_status()->action_heater_room(this->temperature_.value_or(x..., 0),
                                                     this->heating_mode_.value_or(x..., HeatingMode::HEATING_MODE_OFF));
   }
 };
@@ -22,7 +22,7 @@ template<typename... Ts> class HeaterWaterTempAction : public Action<Ts...>, pub
   TEMPLATABLE_VALUE(u_int8_t, temperature)
 
   void play(Ts... x) override {
-    this->parent_->get_heater()->action_heater_water(this->temperature_.value_or(x..., 0));
+    this->parent_->get_alde_status()->action_heater_water(this->temperature_.value_or(x..., 0));
   }
 };
 
@@ -31,7 +31,7 @@ template<typename... Ts> class HeaterWaterTempEnumAction : public Action<Ts...>,
   TEMPLATABLE_VALUE(TargetTemp, temperature)
 
   void play(Ts... x) override {
-    this->parent_->get_heater()->action_heater_water(this->temperature_.value_or(x..., TargetTemp::TARGET_TEMP_OFF));
+    this->parent_->get_alde_status()->action_heater_water(this->temperature_.value_or(x..., TargetTemp::TARGET_TEMP_OFF));
   }
 };
 
@@ -40,7 +40,7 @@ template<typename... Ts> class HeaterElecPowerLevelAction : public Action<Ts...>
   TEMPLATABLE_VALUE(u_int16_t, watt)
 
   void play(Ts... x) override {
-    this->parent_->get_heater()->action_heater_electric_power_level(this->watt_.value_or(x..., 0));
+    this->parent_->get_alde_status()->action_heater_electric_power_level(this->watt_.value_or(x..., 0));
   }
 };
 
