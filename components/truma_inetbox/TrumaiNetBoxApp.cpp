@@ -74,6 +74,9 @@ void TrumaiNetBoxApp::update() {
       ESP_LOGD(TAG, "x13: %s - %.1f°C",
                format_hex_pretty((uint8_t *) &this->heater_alde_pid_13_, sizeof(Heater_Alde_PID_13)).c_str(),
                temp_code_to_decimal(this->heater_alde_pid_13_.temp));
+      ESP_LOGD(TAG, "x14: %s - %.1f°C",
+               format_hex_pretty((uint8_t *) &this->heater_alde_pid_14_, sizeof(Heater_Alde_PID_14)).c_str(),
+               temp_code_to_decimal(this->heater_alde_pid_14_.temp));      
       ESP_LOGD(TAG, "x15: %s - %u / %i %.1f°C",
                format_hex_pretty((uint8_t *) &this->heater_alde_pid_15_, sizeof(Heater_Alde_PID_15)).c_str(),
                this->heater_alde_pid_15_.unknown_02, this->heater_alde_pid_15_.unknown_02,
