@@ -163,14 +163,6 @@ struct Heater_Alde_PID_13 {  // NOLINT(altera-struct-pack-align)
   u_int8_t unknown_02;       // 0x04
 } __attribute__((packed));
 
-struct Heater_Alde_PID_14 {  // NOLINT(altera-struct-pack-align)
-  TargetTemp temp;           // 30-55-57°C
-  u_int16_t unknown_02;      // 0x7FFF
-  u_int16_t unknown_04;      // 0x7FFF
-  u_int8_t unknown_06;       // 0x6D x45
-  u_int8_t unknown_07;       // 0x00
-} __attribute__((packed));
-
 // ex: 00.00.2F.F5.04.0B.FF.FF
 // ex: 00.00.2F.F5.0E.0B.FF.FF
 // ex: 00.00.2F.F5.C2.0B
@@ -179,6 +171,14 @@ struct Heater_Alde_PID_15 {  // NOLINT(altera-struct-pack-align)
   u_int8_t unknown_01;       // 0x00
   u_int16_t unknown_02;      // 0xF52F
   TargetTemp temp;           // 9-10-28°C
+} __attribute__((packed));
+
+struct Heater_Alde_PID_16 {  // NOLINT(altera-struct-pack-align)
+  TargetTemp temp;           // 30-55-57°C
+  u_int16_t unknown_02;      // 0x7FFF
+  u_int16_t unknown_04;      // 0x7FFF
+  u_int8_t unknown_06;       // 0x6D x45
+  u_int8_t unknown_07;       // 0x00
 } __attribute__((packed));
 
 // ex: D0.0C.FF.7F.FF.7F.6D.00
