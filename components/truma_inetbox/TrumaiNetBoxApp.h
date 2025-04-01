@@ -88,7 +88,6 @@ class TrumaiNetBoxApp : public LinBusProtocol {
   Heater_Alde_PID_07 heater_alde_pid_07_ = {};
   Heater_Alde_PID_13 heater_alde_pid_13_ = {};
   Heater_Alde_PID_15 heater_alde_pid_15_ = {};
-  Heater_Alde_PID_16 heater_alde_pid_16_ = {};  
   Heater_Alde_PID_1B heater_alde_pid_1B_ = {};
 
   // last time CP plus was informed I got an update msg.
