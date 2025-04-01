@@ -29,7 +29,7 @@ void TrumaHeaterNumber::setup() {
         this->publish_state(temp_code_to_decimal(status_alde->target_temp_room, 0));
         break;
       case TRUMA_NUMBER_TYPE::TARGET_WATER_TEMPERATURE:
-        this->publish_state(static_cast<float>(((u_int8_t) status_alde->water_mode, 0));
+        this->publish_state(static_cast<float>((u_int8_t) status_alde->water_mode, 0));
         break;
       case TRUMA_NUMBER_TYPE::ELECTRIC_POWER_LEVEL:
         this->publish_state(static_cast<float>(((u_int8_t) status_alde->el_mode) * 100));
